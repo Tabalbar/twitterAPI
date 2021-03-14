@@ -34,7 +34,17 @@ function getTweetObject(tweet) {
 module.exports = (io) => {
     io.on('connection', function (socket) {
         console.log('sockets connected');
+        socket.on('stop stream', () => {
+            console.log('stopped streaming tweets');
+            stream.stop();
+            isStreamStopped = true;
+        });
 
+        socket.on('restart stream', () => {
+            console.log('restarted streaming tweets');
+            stream.start();
+            isStreamStopped = false;
+        });
         socket.on('start stream', () => {
             console.log('started streaming tweets');
 
