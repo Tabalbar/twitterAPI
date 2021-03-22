@@ -27,7 +27,7 @@ function getTweetObject(tweet) {
     tweetText = tweet.text
     let TweetObject = {
         text: tweetText,
-        id: tweet.id,
+        id: tweet.user.id,
         user: tweet.user.name,
         retweetedPerson: retweetedPerson,
         location: (tweet.user.location !== null) ? tweet.user.location : '',
