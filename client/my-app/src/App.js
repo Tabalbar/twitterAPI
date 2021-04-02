@@ -22,51 +22,53 @@ let count = 0;
 
 
   const mapTweetsToState = (tweet) => {
-
-    setTweets(prev => [...prev, tweet])
-    const node = {
-      label: tweet.user,
-      id: graph.nodes.length,
-      title: tweet.text
-    }
-
-    if (tweet.retweetedPerson.name === '') {
-      let tmpGraph = graph
-      tmpGraph.nodes.push(node)
-      setGraph(tmpGraph)
-
-    } else {
-
-      let found = false;
-      let index = 0
-      for (let i = 0; i < graph.nodes.length; i++) {
-        if (graph.nodes[i].label === tweet.retweetedPerson.name) {
-          found = true;
-          index = i
-          break;
-        }
+    if(tweet){
+      setTweets(prev => [...prev, tweet])
+      const node = {
+        label: tweet.user,
+        id: graph.nodes.length,
+        title: tweet.text
       }
-      if (found) {
+  
+      if (tweet.retweetedPerson.name === '') {
         let tmpGraph = graph
         tmpGraph.nodes.push(node)
-        tmpGraph.edges.push({ from: graph.nodes.length, to: index })
         setGraph(tmpGraph)
+  
       } else {
-        let tmpGraph = graph
-        tmpGraph.nodes.push(node)
-        // setGraph(tmpGraph)
-        let newNode = {
-          id: tmpGraph.nodes.length,
-          label: tweet.retweetedPerson.name,
-          title: tweet.text
-
+  
+        let found = false;
+        let index = 0
+        for (let i = 0; i < graph.nodes.length; i++) {
+          if (graph.nodes[i].label === tweet.retweetedPerson.name) {
+            found = true;
+            index = i
+            break;
+          }
         }
-        tmpGraph.nodes.push(newNode)
-        tmpGraph.edges.push({ from: graph.nodes.length, to: graph.nodes.length+1 })
-        setGraph(tmpGraph)
+        if (found) {
+          let tmpGraph = graph
+          tmpGraph.nodes.push(node)
+          tmpGraph.edges.push({ from: graph.nodes.length, to: index })
+          setGraph(tmpGraph)
+        } else {
+          let tmpGraph = graph
+          tmpGraph.nodes.push(node)
+          // setGraph(tmpGraph)
+          let newNode = {
+            id: tmpGraph.nodes.length,
+            label: tweet.retweetedPerson.name,
+            title: tweet.text
+  
+          }
+          tmpGraph.nodes.push(newNode)
+          tmpGraph.edges.push({ from: graph.nodes.length, to: graph.nodes.length+1 })
+          setGraph(tmpGraph)
+        }
       }
+      count+=1;
     }
-    count+=1;
+
 
   }
 

@@ -16,27 +16,33 @@ let isStreamStopped = false;
 function getTweetObject(tweet) {
     let tweetText = (tweet.extended_tweet) ? tweet.extended_tweet.full_text : tweet.text;
     let retweetedPerson = {id: '', name: ''}
-    // check for retweets
-    if (tweet.text.includes('RT @') && tweet.retweeted_status) {
+    // check for retweets "RT @"
+
+    if (tweet.text.includes('#') && tweet.retweeted_status) {
+        console.log(tweet.text)
+
         tweetText = (tweet.retweeted_status.extended_tweet) ? tweet.retweeted_status.extended_tweet.full_text : tweet.retweeted_status.text;
         retweetedPerson.name = (tweet.retweeted_status) ? tweet.retweeted_status.user.name : ''
         retweetedPerson.id = (tweet.retweeted_status) ? tweet.retweeted_status.user.id : ''
 
+        tweetText = tweet.text
+        let TweetObject = {
+            text: tweetText,
+            id: tweet.user.id,
+            user: tweet.user.name,
+            retweetedPerson: retweetedPerson,
+            location: (tweet.user.location !== null) ? tweet.user.location : '',
+            followers: tweet.user.followers_count,
+            userImage: tweet.user.profile_image_url,
+            timestamp: tweet.timestamp_ms,
+        };
+    
+        return TweetObject;
+    } else {
+        return false;
     }
-    console.log(retweetedPerson)
-    tweetText = tweet.text
-    let TweetObject = {
-        text: tweetText,
-        id: tweet.user.id,
-        user: tweet.user.name,
-        retweetedPerson: retweetedPerson,
-        location: (tweet.user.location !== null) ? tweet.user.location : '',
-        followers: tweet.user.followers_count,
-        userImage: tweet.user.profile_image_url,
-        timestamp: tweet.timestamp_ms,
-    };
 
-    return TweetObject;
+
 }
 
 module.exports = (io) => {
