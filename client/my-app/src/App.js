@@ -37,34 +37,87 @@ let count = 0;
   
       } else {
   
-        let found = false;
-        let index = 0
+        let foundRetweetedPerson = false;
+        let foundTweetedPerson = false;
+        let retweetedIndex;
+        let tweetedIndex;
+
         for (let i = 0; i < graph.nodes.length; i++) {
           if (graph.nodes[i].label === tweet.retweetedPerson.name) {
-            found = true;
-            index = i
+            foundRetweetedPerson = true;
+            retweetedIndex = i
             break;
           }
         }
-        if (found) {
-          let tmpGraph = graph
-          tmpGraph.nodes.push(node)
-          tmpGraph.edges.push({ from: graph.nodes.length, to: index })
-          setGraph(tmpGraph)
-        } else {
-          let tmpGraph = graph
-          tmpGraph.nodes.push(node)
-          // setGraph(tmpGraph)
-          let newNode = {
-            id: tmpGraph.nodes.length,
-            label: tweet.retweetedPerson.name,
-            title: tweet.text
-  
+        for(let i = 0; i < graph.nodes.length; i++){
+          if(graph.nodes[i].label === tweet.user){
+            foundTweetedPerson = true;
+            tweetedIndex = i;
+            break;
           }
-          tmpGraph.nodes.push(newNode)
-          tmpGraph.edges.push({ from: graph.nodes.length, to: graph.nodes.length+1 })
-          setGraph(tmpGraph)
         }
+        
+        let tmpGraph = graph;
+
+        if(foundTweetedPerson){
+          if(foundRetweetedPerson){
+            tmpGraph.edges.push({from: tweetedIndex, to: retweetedIndex})
+          } else {
+            let newNode = {
+              label: tweet.retweetedPerson.name,
+              id: tmpGraph.nodes.length,
+              title: tweet.text
+            }
+            tmpGraph.nodes.push(newNode)
+            tmpGraph.edges.push({from: tweetedIndex, to: tmpGraph.nodes.length})
+          }
+        } else {
+          if(foundRetweetedPerson){
+
+            const node = {
+              label: tweet.user,
+              id: tmpGraph.nodes.length,
+              title: tweet.text
+            }
+            tmpGraph.nodes.push(node)
+            tmpGraph.edges.push({from: tmpGraph.nodes.length, to: retweetedIndex})
+          } else {
+
+            const node = {
+              label: tweet.user,
+              id: tmpGraph.nodes.length,
+              title: tweet.text
+            }
+            tmpGraph.nodes.push(node)
+            let newNode = {
+              label: tweet.retweetedPerson.name,
+              id: tmpGraph.nodes.length,
+              title: tweet.text
+            }
+            tmpGraph.nodes.push(newNode)
+            tmpGraph.edges.push({from: tmpGraph.nodes.length-1, to: tmpGraph.nodes.length})
+          }
+        }
+        setGraph(tmpGraph)
+        // if (foundRetweetedPerson) {
+        //   let tmpGraph = graph
+          // tmpGraph.nodes.push(node)
+        //   tmpGraph.edges.push({ from: graph.nodes.length, to: retweetedIndex })
+        //   setGraph(tmpGraph)
+        // } else {
+        //   let tmpGraph = graph
+        //   tmpGraph.nodes.push(node)
+        //   // setGraph(tmpGraph)
+          // let newNode = {
+          //   id: tmpGraph.nodes.length,
+          //   label: tweet.retweetedPerson.name,
+          //   title: tweet.text
+  
+          // }
+          // tmpGraph.nodes.push(newNode)
+        //   tmpGraph.edges.push({ from: graph.nodes.length, to: graph.nodes.length+1 })
+        //   setGraph(tmpGraph)
+        // }
       }
       count+=1;
     }
