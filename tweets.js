@@ -10,38 +10,40 @@ var T = new twit({
 });
 var hawaiiHonoulu = ['-170.97', '12.09', '-142.68', '33.96']
 // let stream = T.stream('statuses/filter', {locations: hawaiiHonoulu})
-let stream = T.stream('statuses/filter', { track: 'food' })
+let stream = T.stream('statuses/filter', { track: ['sports'] })
 
 let isStreamStopped = false;
 function getTweetObject(tweet) {
     let tweetText = (tweet.extended_tweet) ? tweet.extended_tweet.full_text : tweet.text;
-    let retweetedPerson = {id: '', name: ''}
+    let retweetedPerson = {id: '', name: '', followers_count: 0, }
     // check for retweets "RT @"
 
-    if (tweet.text.includes('#') && tweet.retweeted_status) {
-        console.log(tweet.text)
-
+    if (tweet.text.includes('@') && tweet.retweeted_status) {
+        console.log(tweet)
         tweetText = (tweet.retweeted_status.extended_tweet) ? tweet.retweeted_status.extended_tweet.full_text : tweet.retweeted_status.text;
         retweetedPerson.name = (tweet.retweeted_status) ? tweet.retweeted_status.user.name : ''
         retweetedPerson.id = (tweet.retweeted_status) ? tweet.retweeted_status.user.id : ''
-
+        retweetedPerson.timestamp = (tweet.retweeted_status) ? tweet.retweeted_status.created_at : ''
+        retweetedPerson.followers = (tweet.retweeted_status) ? tweet.retweeted_status.user.followers_count : ''
+        retweetedPerson.location = (tweet.retweeted_status) ? tweet.retweeted_status.user.location : ''
         tweetText = tweet.text
         let TweetObject = {
             text: tweetText,
             id: tweet.user.id,
-            user: tweet.user.name,
+            user: tweet.user.screen_name,
             retweetedPerson: retweetedPerson,
             location: (tweet.user.location !== null) ? tweet.user.location : '',
             followers: tweet.user.followers_count,
-            userImage: tweet.user.profile_image_url,
-            timestamp: tweet.timestamp_ms,
+            timestamp: tweet.created_at,
         };
     
         return TweetObject;
     } else {
-        return false;
+        return false
     }
 
+
+  
 
 }
 

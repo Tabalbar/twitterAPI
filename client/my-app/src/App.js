@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import openSocket from 'socket.io-client'
 import Graph from 'react-graph-vis'
-import { T } from 'lodash/fp'
 
 var socket = openSocket('http://localhost:5000', { transports: ['websocket'] })
 
@@ -15,28 +14,26 @@ function App() {
   // const [count, setCount] = useState(0)
   // const [secondCount, setSecondCount] = useState(1000)
 
-  useEffect(() => {
-    socket.on('latest tweets', mapTweetsToState)
-  }, [])
-let count = 0;
+
+  let count = 0;
 
 
   const mapTweetsToState = (tweet) => {
-    if(tweet){
+    if (tweet) {
       setTweets(prev => [...prev, tweet])
       const node = {
         label: tweet.user,
         id: graph.nodes.length,
         title: tweet.text
       }
-  
+
       if (tweet.retweetedPerson.name === '') {
         let tmpGraph = graph
         tmpGraph.nodes.push(node)
         setGraph(tmpGraph)
-  
+
       } else {
-  
+
         let foundRetweetedPerson = false;
         let foundTweetedPerson = false;
         let retweetedIndex;
@@ -49,19 +46,19 @@ let count = 0;
             break;
           }
         }
-        for(let i = 0; i < graph.nodes.length; i++){
-          if(graph.nodes[i].label === tweet.user){
+        for (let i = 0; i < graph.nodes.length; i++) {
+          if (graph.nodes[i].label === tweet.user) {
             foundTweetedPerson = true;
             tweetedIndex = i;
             break;
           }
         }
-        
+
         let tmpGraph = graph;
 
-        if(foundTweetedPerson){
-          if(foundRetweetedPerson){
-            tmpGraph.edges.push({from: tweetedIndex, to: retweetedIndex})
+        if (foundTweetedPerson) {
+          if (foundRetweetedPerson) {
+            tmpGraph.edges.push({ from: tweetedIndex, to: retweetedIndex })
           } else {
             let newNode = {
               label: tweet.retweetedPerson.name,
@@ -69,10 +66,10 @@ let count = 0;
               title: tweet.text
             }
             tmpGraph.nodes.push(newNode)
-            tmpGraph.edges.push({from: tweetedIndex, to: tmpGraph.nodes.length})
+            tmpGraph.edges.push({ from: tweetedIndex, to: tmpGraph.nodes.length })
           }
         } else {
-          if(foundRetweetedPerson){
+          if (foundRetweetedPerson) {
 
             const node = {
               label: tweet.user,
@@ -80,7 +77,7 @@ let count = 0;
               title: tweet.text
             }
             tmpGraph.nodes.push(node)
-            tmpGraph.edges.push({from: tmpGraph.nodes.length, to: retweetedIndex})
+            tmpGraph.edges.push({ from: tmpGraph.nodes.length, to: retweetedIndex })
           } else {
 
             const node = {
@@ -95,36 +92,20 @@ let count = 0;
               title: tweet.text
             }
             tmpGraph.nodes.push(newNode)
-            tmpGraph.edges.push({from: tmpGraph.nodes.length-1, to: tmpGraph.nodes.length})
+            tmpGraph.edges.push({ from: tmpGraph.nodes.length - 1, to: tmpGraph.nodes.length })
           }
         }
         setGraph(tmpGraph)
-        // if (foundRetweetedPerson) {
-        //   let tmpGraph = graph
-          // tmpGraph.nodes.push(node)
-        //   tmpGraph.edges.push({ from: graph.nodes.length, to: retweetedIndex })
-        //   setGraph(tmpGraph)
-        // } else {
-        //   let tmpGraph = graph
-        //   tmpGraph.nodes.push(node)
-        //   // setGraph(tmpGraph)
-          // let newNode = {
-          //   id: tmpGraph.nodes.length,
-          //   label: tweet.retweetedPerson.name,
-          //   title: tweet.text
-  
-          // }
-          // tmpGraph.nodes.push(newNode)
-        //   tmpGraph.edges.push({ from: graph.nodes.length, to: graph.nodes.length+1 })
-        //   setGraph(tmpGraph)
-        // }
+
       }
-      count+=1;
+      count += 1;
     }
 
 
   }
-
+  useEffect(() => {
+    socket.on('latest tweets', mapTweetsToState)
+  }, [])
   const stopStreaming = () => {
     socket.emit('stop stream', () => { });
 
@@ -151,21 +132,23 @@ let count = 0;
   const forceUpdateHandler = () => {
     this.forceUpdate()
   }
-  // const callApi = async () => {
-  //   const response = await fetch('http://localhost:5000/api/hello');
-  //   const body = await response.json();
-  //   console.log(body)
-  //   if (response.status !== 200) throw Error(body.message);
-
-  //   return body;
-  // };
 
 
-console.log(graph)
+  const exportNetwork = (e) => {
+    console.log('here')
+
+    createNetworkFile(tweets)
+
+  }
+
+
+  console.log(graph)
   return (
     <>
+      <button onClick={() => exportNetwork()}>Download Network</button>
+
       <button onClick={startStreaming}>Start Stream</button>
-      <button onClick={stopStreaming}>Stop Stream</button>      
+      <button onClick={stopStreaming}>Stop Stream</button>
       {/* <button onClick={forceUpdateHandler}>Stop Stream</button>       */}
 
       <div>
@@ -180,6 +163,7 @@ console.log(graph)
         })}
       </div>
       <Graph
+        improvedLayout={false}
         graph={graph}
         options={options}
         events={events}
@@ -193,3 +177,31 @@ console.log(graph)
 }
 
 export default App;
+
+function createNetworkFile(tweets) {
+  let nodes = [];
+  let edges = []
+  for( let i in tweets){
+    if (tweets[i].retweetedPerson.name === '') {
+      nodes.push({id: tweets[i].id, name: tweets[i].user, text: tweets[i].text, location: tweets[i].location, followers: tweets[i].followers, timestamp: tweets[i].timestamp})
+  
+    } else {
+      nodes.push({id: tweets[i].retweetedPerson.id, name: tweets[i].retweetedPerson.name, text: tweets[i].text, location: tweets[i].retweetedPerson.location, followers: tweets[i].retweetedPerson.followers, timestamp: tweets[i].retweetedPerson.timestamp})
+      edges.push({source: tweets[i].id, target: tweets[i].retweetedPerson.id})
+    }
+  }
+
+  let network = {
+    nodes: nodes,
+    edges: edges
+  }
+  
+
+  const element = document.createElement("a");
+  network = JSON.stringify(network)
+  const file = new Blob([network], { type: 'text/plain' });
+  element.href = URL.createObjectURL(file);
+  element.download = "twitter_network.json";
+  document.body.appendChild(element); // Required for this to work in FireFox
+  element.click();
+}
