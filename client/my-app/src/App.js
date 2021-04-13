@@ -150,7 +150,6 @@ function App() {
       <button onClick={startStreaming}>Start Stream</button>
       <button onClick={stopStreaming}>Stop Stream</button>
       {/* <button onClick={forceUpdateHandler}>Stop Stream</button>       */}
-
       <div>
         {tweets.map((tweet) => {
           return (

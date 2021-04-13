@@ -10,7 +10,7 @@ var T = new twit({
 });
 var hawaiiHonoulu = ['-170.97', '12.09', '-142.68', '33.96']
 // let stream = T.stream('statuses/filter', {locations: hawaiiHonoulu})
-let stream = T.stream('statuses/filter', { track: ['sports'] })
+let stream = T.stream('statuses/filter', { track: ['#OCD', '#PTSD', '#schizophernia', '#psychotic', '#anorexia', 'bulimia', ''] })
 
 let isStreamStopped = false;
 function getTweetObject(tweet) {
